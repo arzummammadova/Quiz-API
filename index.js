@@ -4,6 +4,7 @@ dotenv.config();
 import './src/db/dbConnect.js'
 import helmet from "helmet";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import authRouter from "./src/routes/authRouter.js";
 
 
@@ -13,6 +14,7 @@ const PORT=process.env.PORT;
 
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(helmet());
 app.use(cors());
 
