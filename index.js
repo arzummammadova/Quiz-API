@@ -6,6 +6,7 @@ import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRouter from "./src/routes/authRouter.js";
+import quizRouter from "./src/routes/quizRouter.js";
 
 
 const app=express();
@@ -19,6 +20,8 @@ app.use(helmet());
 app.use(cors());
 
 app.use("/api/auth",authRouter);
+app.use("/api/quiz",quizRouter);
+
 
 app.listen(PORT,()=>{
     console.log(`server is running on ${PORT}`)

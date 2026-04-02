@@ -36,7 +36,7 @@ export const registerUser = async (req, res) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Verify your email",
-            text: `Please verify your email by clicking on the following link: http://localhost:3000/verify/${verificationToken}`,
+            text: `Please verify your email by clicking on the following link: http://localhost:5173/verify-email/${verificationToken}`,
         };
 
         await transporter.sendMail(mailOptions);
@@ -132,5 +132,113 @@ export const getMe = async (req, res) => {
     } catch (error) {
         console.error("GetMe error:", error);
         return res.status(401).json({ message: "Invalid or expired token" });
+    }
+};
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const resetExpires = Date.now() + 3600000; // 1 hour
+
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = resetExpires;
+        await user.save();
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Password Reset Request",
+            text: `You requested a password reset. Please click on this link to reset your password: ${process.env.BASE_URL || 'http://localhost'}/reset-password/${resetToken}`,
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        return res.status(200).json({ message: "Password reset link sent to your email" });
+    } catch (error) {
+        console.error("Forgot password error:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({ message: "New password is required" });
+        }
+
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() } // token must not be expired
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired reset token" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword;
+        user.resetPasswordToken = null;
+        user.resetPasswordExpires = null;
+        
+        await user.save();
+
+        return res.status(200).json({ message: "Password has been successfully changed" });
+    } catch (error) {
+        console.error("Reset password error:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const updateUser = async (req, res) => {
+    try {
+        const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({ message: "Access denied. No token provided." });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const { username, password } = req.body;
+
+        const user = await User.findById(decoded.id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (username) user.username = username;
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user.password = hashedPassword;
+        }
+
+        await user.save();
+
+        return res.status(200).json({
+            message: "User information updated successfully",
+            user: {
+                username: user.username,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        console.error("Update user error:", error);
+        if (error.name === "JsonWebTokenError") {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
