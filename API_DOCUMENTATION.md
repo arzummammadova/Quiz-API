@@ -1,122 +1,122 @@
-# Quiz API Documentation
+# Quiz API Sənədləri (Frontend üçün Bələdçi)
 
-This API handles authentication and quiz functionality.
+Bu API həm istifadəçi autentifikasiyasını (qeydiyyat, giriş, profil redaktəsi), həm də Quiz (imtahan) məntiqini idarə edir.
 
-**Base URL**: `http://localhost:5000/api` (Verify your PORT in `.env`)
+**Baza URL (Base URL)**: `http://localhost:5000/api` (Zəhmət olmasa `.env` faylında PORT-u yoxlayın)
 
 ---
 
-## 1. Authentication Endpoints (`/auth`)
+## 1. Autentifikasiya (Qeydiyyat və Giriş) - `/auth`
 
-### Register User
+### İstifadəçi Qeydiyyatı
 - **URL**: `/auth/register`
-- **Method**: `POST`
+- **Metod**: `POST`
 - **Body**:
   ```json
   {
-    "username": "john_doe",
-    "email": "john@example.com",
-    "password": "securepassword"
+    "username": "istifadeci_adi",
+    "email": "test@mail.com",
+    "password": "sifre"
   }
   ```
 
-### Login User
+### Giriş
 - **URL**: `/auth/login`
-- **Method**: `POST`
+- **Metod**: `POST`
 - **Body**:
   ```json
   {
-    "email": "john@example.com",
-    "password": "securepassword"
+    "email": "test@mail.com",
+    "password": "sifre"
   }
   ```
+  *Giriş uğurlu olduqda sizə bir `token` və `user` obyekti qaytarılır.*
 
-### Register/Login Response
-- **Response (Success)**:
-  ```json
-  {
-    "message": "Login successful",
-    "token": "YOUR_JWT_TOKEN",
-    "user": { ... }
-  }
-  ```
-
-### Update User Profile (Self)
+### Profil Məlumatlarının Redaktəsi (Email istisna olmaqla)
 - **URL**: `/auth/update`
-- **Method**: `PUT`
+- **Metod**: `PUT`
 - **Headers**: `Authorization: Bearer <token>`
 - **Body**:
   ```json
   {
-    "username": "new_username",
-    "password": "new_password"
+    "username": "yeni_ad",
+    "password": "yeni_sifre"
   }
   ```
-  *Note: Email cannot be updated.*
+  *Qeyd: Email dəyişdirilə bilməz.*
 
 ---
 
-## 2. Quiz Endpoints (`/quiz`)
+## 2. Quiz (İmtahan) Bölməsi - `/quiz`
 
-### Step 1: Seed Mock Data (Optional, run once if DB is empty)
+İmtahan məntiqi pilləli şəkildə işləyir:
+
+### Addım 0: Bazanı Suallarla Doldurmaq (Yalnız bir dəfə)
 - **URL**: `/quiz/seed`
-- **Method**: `GET`
-- **Description**: populates the database with some frontend and backend questions.
+- **Metod**: `GET`
+- **Açıqlama**: Brauzerdə və ya Postman-da bu linki bir dəfə çağırın ki, backend tərəfdə nümunə suallar yaransın.
 
-### Step 2: Get Topics by Category
+### Addım 1: Kateqoriya Seçimi (Frontend və ya Backend)
+İstifadəçi sayta girəndə "Frontend" və ya "Backend" seçməlidir. Buna görə müvafiq kateqoriyaya aid mövzuları çəkirik:
+
 - **URL**: `/quiz/topics/:category`
-- **Method**: `GET`
-- **Params**: `category` should be `frontend` or `backend`.
+- **Metod**: `GET`
+- **Parametr**: `category` yerinə `frontend` və ya `backend` yazılmalıdır.
+- **Nümunə**: `GET /api/quiz/topics/frontend`
 - **Response**:
   ```json
   {
-    "topics": ["HTML", "CSS", "Node.js", "Database"]
+    "topics": ["HTML", "CSS", "React"]
   }
   ```
 
-### Step 3: Get Questions
-- **URL**: `/quiz/questions?category=frontend&topic=HTML`
-- **Method**: `GET`
-- **Query Params**: `category`, `topic`
-- **Description**: Returns all questions for the specified topic without the correct answers.
+### Addım 2: Mövzu Seçimi və Sualların Çəkilməsi
+İstifadəçi mövzunu (məsələn, "React") seçdikdən sonra həmin mövzuya aid sualları çəkirik:
+
+- **URL**: `/quiz/questions?category=frontend&topic=React`
+- **Metod**: `GET`
+- **Query Params**: `category` (frontend/backend) və `topic` (mövzu adı).
+- **Açıqlama**: Bu endpoint sualları və variantları gətirir, lakin düzgün cavabları gizlədir.
 - **Response**:
   ```json
   {
     "questions": [
       {
-        "_id": "64...",
-        "question": "What does HTML stand for?",
-        "options": ["A", "B", "C", "D"],
+        "_id": "suallin_id_si",
+        "question": "React nədir?",
+        "options": ["A variantı", "B variantı", "C variantı", "D variantı"],
         "category": "frontend",
-        "topic": "HTML"
+        "topic": "React"
       }
     ]
   }
   ```
 
-### Step 4: Check Answers
+### Addım 3: Cavabların Yoxlanılması
+İstifadəçi bütün sualları cavablandırdıqdan sonra nəticəni hesablamaq üçün bütün seçimləri göndəririk:
+
 - **URL**: `/quiz/check`
-- **Method**: `POST`
+- **Metod**: `POST`
 - **Body**:
   ```json
   {
     "answers": [
-      { "questionId": "64...", "selectedOption": 0 },
-      { "questionId": "65...", "selectedOption": 2 }
+      { "questionId": "suallin_id_si_1", "selectedOption": 1 },
+      { "questionId": "suallin_id_si_2", "selectedOption": 3 }
     ]
   }
   ```
 - **Response**:
   ```json
   {
-    "score": 1,
-    "total": 2,
+    "score": 5,
+    "total": 10,
     "results": [
       {
-        "questionId": "64...",
+        "questionId": "...",
         "isCorrect": true,
-        "correctOption": 0,
-        "correctText": "Option Text"
+        "correctOption": 1,
+        "correctText": "Düzgün variantın mətni"
       }
     ]
   }
@@ -124,7 +124,7 @@ This API handles authentication and quiz functionality.
 
 ---
 
-## Notes for Frontend:
-- Store the `token` in `localStorage` or `sessionStorage`.
-- For protected routes (`/auth/update`, etc.), send the token in the `Authorization` header: `Bearer <token>`.
-- The cookie-based auth is also supported.
+## Frontend Üçün Qeydlər:
+1.  Girişdən sonra gələn `token`-i `localStorage`-da saxlayın.
+2.  Profil redaktəsi kimi qorunan yollara istek göndərərkən `Authorization` header-ində `Bearer <token>` göndərməyi unutmayın.
+3.  İstifadəçiyə əvvəlcə Frontend/Backend seçdirin, sonra həmin seçimə görə `topics` endpoint-indən gələn mövzuları düymə kimi göstərin.
