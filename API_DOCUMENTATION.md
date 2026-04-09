@@ -40,10 +40,16 @@ Bu API həm istifadəçi autentifikasiyasını (qeydiyyat, giriş, profil redakt
   ```json
   {
     "username": "yeni_ad",
-    "password": "yeni_sifre"
+    "password": "yeni_sifre",
+    "bio": "Mənim haqqımda məlumat",
+    "socialLinks": {
+      "facebook": "fb_link",
+      "instagram": "ig_link",
+      "github": "gh_link"
+    }
   }
   ```
-  *Qeyd: Email dəyişdirilə bilməz.*
+  *Qeyd: Email dəyişdirilə bilməz. Bio və sosial linklər isteğe bağlıdır.*
 
 ---
 

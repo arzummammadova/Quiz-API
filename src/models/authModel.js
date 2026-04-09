@@ -37,6 +37,17 @@ const userSchema=new mongoose.Schema({
         type: Date,
         default: null,
     },
+    bio: {
+        type: String,
+        default: "",
+    },
+    socialLinks: {
+        facebook: { type: String, default: "" },
+        instagram: { type: String, default: "" },
+        twitter: { type: String, default: "" },
+        linkedin: { type: String, default: "" },
+        github: { type: String, default: "" },
+    },
     
 },{timestamps:true})
 

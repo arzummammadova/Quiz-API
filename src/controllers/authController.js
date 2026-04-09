@@ -76,7 +76,7 @@ export const loginUser=async(req,res)=>{
        }
         const token=jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:"1h"});
         res.cookie("token",token,{httpOnly:true,secure:true,sameSite:"none",maxAge:3600000});
-        return res.status(200).json({message:"Login successful",user:{username:user.username,email:user.email,role:user.role}, token});
+        return res.status(200).json({message:"Login successful",user:{username:user.username,email:user.email,role:user.role, bio: user.bio, socialLinks: user.socialLinks}, token});
 
         
     } catch (error) {
@@ -215,7 +215,7 @@ export const updateUser = async (req, res) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const { username, password } = req.body;
+        const { username, password, bio, socialLinks } = req.body;
 
         const user = await User.findById(decoded.id);
 
@@ -228,6 +228,10 @@ export const updateUser = async (req, res) => {
             const hashedPassword = await bcrypt.hash(password, 10);
             user.password = hashedPassword;
         }
+        if (bio !== undefined) user.bio = bio;
+        if (socialLinks) {
+            user.socialLinks = { ...user.socialLinks, ...socialLinks };
+        }
 
         await user.save();
 
@@ -237,6 +241,8 @@ export const updateUser = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 role: user.role,
+                bio: user.bio,
+                socialLinks: user.socialLinks,
             },
         });
     } catch (error) {
