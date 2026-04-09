@@ -1,4 +1,13 @@
 import { Quiz } from "../models/quizModel.js";
+import { User } from "../models/authModel.js";
+
+const calculateLevel = (points) => {
+    if (points < 100) return "Beginner";
+    if (points < 300) return "Intermediate";
+    if (points < 600) return "Advanced";
+    if (points < 1000) return "Expert";
+    return "Master";
+};
 
 // Mock data (we can use this to seed the DB if it is empty)
 const mockQuestions = [
@@ -110,8 +119,21 @@ export const checkAnswers = async (req, res) => {
             };
         }));
 
+        const totalScore = score * 10; // 10 points per correct answer
+
+        // Update user points if logged in
+        if (req.user) {
+            const user = await User.findById(req.user.id);
+            if (user) {
+                user.points += totalScore;
+                user.level = calculateLevel(user.points);
+                await user.save();
+            }
+        }
+
         return res.status(200).json({
             score,
+            pointsGained: totalScore,
             total: answers.length,
             results
         });

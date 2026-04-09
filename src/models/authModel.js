@@ -48,6 +48,14 @@ const userSchema=new mongoose.Schema({
         linkedin: { type: String, default: "" },
         github: { type: String, default: "" },
     },
+    points: {
+        type: Number,
+        default: 0,
+    },
+    level: {
+        type: String,
+        default: "Beginner",
+    },
     
 },{timestamps:true})
 

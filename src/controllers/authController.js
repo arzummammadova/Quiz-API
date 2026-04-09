@@ -76,7 +76,7 @@ export const loginUser=async(req,res)=>{
        }
         const token=jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:"1h"});
         res.cookie("token",token,{httpOnly:true,secure:true,sameSite:"none",maxAge:3600000});
-        return res.status(200).json({message:"Login successful",user:{username:user.username,email:user.email,role:user.role, bio: user.bio, socialLinks: user.socialLinks}, token});
+        return res.status(200).json({message:"Login successful",user:{username:user.username,email:user.email,role:user.role, bio: user.bio, socialLinks: user.socialLinks, points: user.points, level: user.level}, token});
 
         
     } catch (error) {
@@ -127,7 +127,7 @@ export const getMe = async (req, res) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id).select("-password -verificationToken");
+        const user = await User.findById(decoded.id).select("-password -verificationToken -resetPasswordToken -resetPasswordExpires");
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -243,6 +243,8 @@ export const updateUser = async (req, res) => {
                 role: user.role,
                 bio: user.bio,
                 socialLinks: user.socialLinks,
+                points: user.points,
+                level: user.level
             },
         });
     } catch (error) {

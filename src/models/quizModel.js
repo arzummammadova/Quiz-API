@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const quizSchema = new mongoose.Schema({
     category: {
         type: String,
-        enum: ["frontend", "backend"],
+        enum: ["frontend", "backend", "fullstack"],
         required: true
     },
     topic: {
